@@ -1,6 +1,6 @@
 import pandas as pd
 
-file_path = r'C:\Users\OLIVER YUAN\Desktop\reseach\winequality-red-corrected.csv'
+file_path = 'winequality-red-corrected.csv'
 data = pd.read_csv(file_path)
 
 num_rows = data.shape[0]
