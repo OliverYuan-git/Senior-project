@@ -32,10 +32,10 @@ def wide_reach_classification(X, y, dataset_name, theta=0.9, epsilon_R=0.01, eps
     lambda_value = compute_lambda(len(y), theta)
 
     model = Model("Wide-Reach_Classification")
-    model.setParam(GRB.Param.TimeLimit, 180) # time
+    model.setParam(GRB.Param.TimeLimit, 120) # time
     model.setParam(GRB.Param.MIPGap, 0.01) # gap
     model.setParam(GRB.Param.Heuristics, 0.5)
-    model.setParam(GRB.Param.NodeMethod, 2)  # FIFO
+    model.setParam(GRB.Param.NodeMethod, 2)  
 
     num_features = X.shape[1]
     num_samples = len(y)
@@ -84,7 +84,6 @@ def wide_reach_classification(X, y, dataset_name, theta=0.9, epsilon_R=0.01, eps
             'BC Reach': 0,
             'Nodes': 0
         }
-
 
 results = []
 results.append(wide_reach_classification(X_red_sample, y_red_sample, "Wine Quality (red)"))
