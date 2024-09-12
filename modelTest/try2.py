@@ -10,10 +10,10 @@ red_wine_data = pd.read_csv(red_wine_path)
 white_wine_data = pd.read_csv(white_wine_path)
 crop_data = pd.read_csv('WinnipegDataset.csv')
 
-red_wine_data['target'] = (red_wine_data['quality'] >= 7).astype(int)
+red_wine_data['target'] = (red_wine_data['quality'] >= 8).astype(int)
 X_red = red_wine_data.drop(columns=['quality', 'target']).values
 y_red = red_wine_data['target'].values
-white_wine_data['target'] = (white_wine_data['quality'] >= 7).astype(int)
+white_wine_data['target'] = (white_wine_data['quality'] >= 8).astype(int)
 X_white = white_wine_data.drop(columns=['quality', 'target']).values
 y_white = white_wine_data['target'].values
 
