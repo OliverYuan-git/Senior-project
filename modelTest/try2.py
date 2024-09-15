@@ -9,6 +9,7 @@ white_wine_path = 'winequality-white-corrected.csv'
 red_wine_data = pd.read_csv(red_wine_path)
 white_wine_data = pd.read_csv(white_wine_path)
 crop_data = pd.read_csv('WinnipegDataset.csv')
+bc_data = pd.read_csv('wdbc.csv')
 
 red_wine_data['target'] = (red_wine_data['quality'] >= 8).astype(int)
 X_red = red_wine_data.drop(columns=['quality', 'target']).values
@@ -16,6 +17,9 @@ y_red = red_wine_data['target'].values
 white_wine_data['target'] = (white_wine_data['quality'] >= 8).astype(int)
 X_white = white_wine_data.drop(columns=['quality', 'target']).values
 y_white = white_wine_data['target'].values
+bc_data['target'] = (bc_data['diagnosis'] == 'M').astype(int)
+X_bc = bc_data.drop(columns=['diagnosis', 'target']).values
+y_bc = bc_data['target'].values
 
 crop_random_sample_list = random.sample(range(325835), 10000)
 crop_data = crop_data.iloc[crop_random_sample_list]
@@ -27,6 +31,7 @@ y_crop = crop_data['target'].values
 X_red_sample, _, y_red_sample, _ = train_test_split(X_red, y_red, test_size=0.5, random_state=42)
 X_white_sample, _, y_white_sample, _ = train_test_split(X_white, y_white, test_size=0.5, random_state=42)
 X_crop_sample, _, y_crop_sample, _ = train_test_split(X_crop, y_crop, test_size=0.5, random_state=42)
+X_bc_sample, _, y_bc_sample, _ = train_test_split(X_bc, y_bc, test_size=0.5, random_state=42)
 
 # Adjust Lambda
 def compute_lambda(n, theta):
@@ -95,9 +100,10 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
         }
 
 results = []
-results.append(wide_reach_classification(X_red_sample, y_red_sample, "Wine Quality (red)", 0.9))
-results.append(wide_reach_classification(X_white_sample, y_white_sample, "Wine Quality (white)", 0.9))
-results.append(wide_reach_classification(X_crop_sample, y_crop_sample, "Crop", 0.9))
+results.append(wide_reach_classification(X_bc_sample, y_bc_sample, "B&C", theta=0.99))
+results.append(wide_reach_classification(X_red_sample, y_red_sample, "Wine Quality (red)", theta=0.04))
+results.append(wide_reach_classification(X_white_sample, y_white_sample, "Wine Quality (white)", theta=0.1))
+results.append(wide_reach_classification(X_crop_sample, y_crop_sample, "Crop", theta=0.9))
 df_results = pd.DataFrame(results)
 print("Summary of Results:")
 print(df_results.to_string(index=False))

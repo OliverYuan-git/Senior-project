@@ -1,3 +1,4 @@
+import random
 import pandas as pd
 from gurobipy import Model, GRB, quicksum
 from sklearn.model_selection import KFold
@@ -8,6 +9,8 @@ red_wine_path = 'winequality-red-corrected.csv'
 white_wine_path = 'winequality-white-corrected.csv'
 red_wine_data = pd.read_csv(red_wine_path)
 white_wine_data = pd.read_csv(white_wine_path)
+crop_data = pd.read_csv('WinnipegDataset.csv')
+bc_data = pd.read_csv('wdbc.csv')
 
 red_wine_data['target'] = (red_wine_data['quality'] >= 7).astype(int)
 X_red = red_wine_data.drop(columns=['quality', 'target']).values
@@ -16,9 +19,21 @@ white_wine_data['target'] = (white_wine_data['quality'] >= 7).astype(int)
 X_white = white_wine_data.drop(columns=['quality', 'target']).values
 y_white = white_wine_data['target'].values
 
+bc_data['target'] = (bc_data['diagnosis'] == 'M').astype(int)
+X_bc = bc_data.drop(columns=['diagnosis', 'target']).values
+y_bc = bc_data['target'].values
+
+crop_random_sample_list = random.sample(range(325835), 10000)
+crop_data = crop_data.iloc[crop_random_sample_list]
+crop_data['target'] = (crop_data['label'] == 6).astype(int)
+X_crop = crop_data.drop(columns=['label', 'target']).values
+y_crop = crop_data['target'].values
+
 scaler = StandardScaler()
 X_red = scaler.fit_transform(X_red)
 X_white = scaler.fit_transform(X_white)
+X_crop = scaler.fit_transform(X_crop)
+X_bc = scaler.fit_transform(X_bc)
 
 # KFold
 kf = KFold(n_splits=5, shuffle=True, random_state=14)
@@ -31,7 +46,7 @@ def compute_lambda(n, theta):
 def generate_initial_solution(num_samples):
     return [0.5 for _ in range(num_samples)]
 
-def wide_reach_classification(X, y, dataset_name, theta=0.9, epsilon_R=0.01, epsilon_P=0.01, epsilon_N=0.01):
+def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon_P=0.01, epsilon_N=0.01):
     lambda_value = compute_lambda(len(y), theta)
 
     model = Model("Wide-Reach_Classification")
@@ -90,15 +105,25 @@ def wide_reach_classification(X, y, dataset_name, theta=0.9, epsilon_R=0.01, eps
 results = []
 
 # KFold training
+for train_index, test_index in kf.split(X_bc):
+    X_train, X_test = X_bc[train_index], X_bc[test_index]
+    y_train, y_test = y_bc[train_index], y_bc[test_index]
+    results.append(wide_reach_classification(X_train, y_train, "B&C", theta=0.99))
+
 for train_index, test_index in kf.split(X_red):
     X_train, X_test = X_red[train_index], X_red[test_index]
     y_train, y_test = y_red[train_index], y_red[test_index]
-    results.append(wide_reach_classification(X_train, y_train, "Wine Quality (red)"))
+    results.append(wide_reach_classification(X_train, y_train, "Wine Quality (red)", theta=0.04))
 
 for train_index, test_index in kf.split(X_white):
     X_train, X_test = X_white[train_index], X_white[test_index]
     y_train, y_test = y_white[train_index], y_white[test_index]
-    results.append(wide_reach_classification(X_train, y_train, "Wine Quality (white)"))
+    results.append(wide_reach_classification(X_train, y_train, "Wine Quality (white)", theta=0.1))
+
+for train_index, test_index in kf.split(X_crop):
+    X_train, X_test = X_crop[train_index], X_crop[test_index]
+    y_train, y_test = y_crop[train_index], y_crop[test_index]
+    results.append(wide_reach_classification(X_train, y_train, "crop", theta=0.99))
 
 df_results = pd.DataFrame(results)
 print("Summary of Results:")
