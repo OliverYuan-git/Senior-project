@@ -8,8 +8,11 @@ red_wine_path = 'winequality-red-corrected.csv'
 white_wine_path = 'winequality-white-corrected.csv'
 red_wine_data = pd.read_csv(red_wine_path)
 white_wine_data = pd.read_csv(white_wine_path)
-# crop_data = pd.read_csv('WinnipegDataset.csv')
-# bc_data = pd.read_csv('wdbc.csv')
+
+crop_data = pd.read_csv('WinnipegDataset.csv')
+bc_data = pd.read_csv('wdbc.csv')
+sp_data = pd.read_csv('small-sample.csv')
+
 
 red_wine_data['target'] = (red_wine_data['quality'] >= 8).astype(int)
 X_red = red_wine_data.drop(columns=['quality', 'target']).values
@@ -27,11 +30,16 @@ y_white = white_wine_data['target'].values
 # X_crop = crop_data.drop(columns=['label', 'target']).values
 # y_crop = crop_data['target'].values
 
+X_sp = sp_data.drop(columns=['quality']).values
+y_sp = sp_data['quality'].values
+
 # randon sample
 X_red_sample, _, y_red_sample, _ = train_test_split(X_red, y_red, test_size=0.5, random_state=42)
 X_white_sample, _, y_white_sample, _ = train_test_split(X_white, y_white, test_size=0.5, random_state=42)
-# X_crop_sample, _, y_crop_sample, _ = train_test_split(X_crop, y_crop, test_size=0.5, random_state=42)
-# X_bc_sample, _, y_bc_sample, _ = train_test_split(X_bc, y_bc, test_size=0.5, random_state=42)
+
+X_crop_sample, _, y_crop_sample, _ = train_test_split(X_crop, y_crop, test_size=0.5, random_state=42)
+X_bc_sample, _, y_bc_sample, _ = train_test_split(X_bc, y_bc, test_size=0.5, random_state=42)
+X_sp_sample, _, y_sp_sample, _ = train_test_split(X_sp, y_sp, test_size=0.5, random_state=42)
 
 # Adjust Lambda
 def compute_lambda(n, theta):
@@ -48,7 +56,7 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
     model = Model("Wide-Reach_Classification")
     model.setParam(GRB.Param.TimeLimit, 120) # time
     model.setParam(GRB.Param.MIPGap, 0.01) # gap
-    model.setParam(GRB.Param.Heuristics, 0.5)
+    model.setParam(GRB.Param.Heuristics, 0)
     model.setParam(GRB.Param.NodeMethod, 2)  
 
     num_features = X.shape[1]
@@ -73,6 +81,9 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
         #else:  #N
             model.addConstr(y_vars[i] >= sum(w[k] * X[i, k] for k in range(num_features)) - c + epsilon_N, name=f"classification_negative_{i}")
     model.optimize()
+
+    for v in model.getVars():
+        print('%s %g' % (v.VarName, v.X))
 
     if model.status == GRB.OPTIMAL or model.status == GRB.TIME_LIMIT:
         initial_reach = sum(1 for i in range(num_samples) if y[i] == 1)
@@ -100,10 +111,13 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
         }
 
 results = []
+
+results.append(wide_reach_classification(X_sp_sample, y_sp_sample, "test", theta=0.9))
 # results.append(wide_reach_classification(X_bc_sample, y_bc_sample, "B&C", theta=0.99))
-results.append(wide_reach_classification(X_red_sample, y_red_sample, "Wine Quality (red)", theta=0.04))
-results.append(wide_reach_classification(X_white_sample, y_white_sample, "Wine Quality (white)", theta=0.1))
+# results.append(wide_reach_classification(X_red_sample, y_red_sample, "Wine Quality (red)", theta=0.04))
+# results.append(wide_reach_classification(X_white_sample, y_white_sample, "Wine Quality (white)", theta=0.1))
 # results.append(wide_reach_classification(X_crop_sample, y_crop_sample, "Crop", theta=0.9))
+
 df_results = pd.DataFrame(results)
 print("Summary of Results:")
 print(df_results.to_string(index=False))
