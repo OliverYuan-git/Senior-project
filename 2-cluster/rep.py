@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def generate_cluster_data(n=1000, d=8, random_seed=None):
+def generate_cluster_data(n=1000, d=8, random_seed=42):
     if random_seed is not None:
         np.random.seed(random_seed)
     negative_samples = np.random.rand(4 * n // 5, d)
