@@ -4,20 +4,20 @@ from gurobipy import Model, GRB, quicksum
 from sklearn.model_selection import train_test_split
 import numpy as np
 
-red_wine_path = 'winequality-red-corrected.csv'
-white_wine_path = 'winequality-white-corrected.csv'
-red_wine_data = pd.read_csv(red_wine_path)
-white_wine_data = pd.read_csv(white_wine_path)
-
+red_wine_data = pd.read_csv('winequality-red-corrected.csv')
+white_wine_data = pd.read_csv('winequality-white-corrected.csv')
 crop_data = pd.read_csv('WinnipegDataset.csv')
 bc_data = pd.read_csv('wdbc.csv')
 
+# data processing
 red_wine_data['target'] = (red_wine_data['quality'] >= 8).astype(int)
 X_red = red_wine_data.drop(columns=['quality', 'target']).values
 y_red = red_wine_data['target'].values
+
 white_wine_data['target'] = (white_wine_data['quality'] >= 8).astype(int)
 X_white = white_wine_data.drop(columns=['quality', 'target']).values
 y_white = white_wine_data['target'].values
+
 bc_data['target'] = (bc_data['diagnosis'] == 'M').astype(int)
 X_bc = bc_data.drop(columns=['diagnosis', 'target']).values
 y_bc = bc_data['target'].values
@@ -70,9 +70,9 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
 
     # !!!might have problem here
     for i in range(num_samples):
-        #if y[i] == 0.5:  #P
+        if y[i] == 0.5:  #P
             model.addConstr(x[i] <= 1 + sum(w[k] * X[i, k] for k in range(num_features)) - c - epsilon_P, name=f"classification_positive_{i}")
-        #else:  #N
+        else:  #N
             model.addConstr(y_vars[i] >= sum(w[k] * X[i, k] for k in range(num_features)) - c + epsilon_N, name=f"classification_negative_{i}")
     model.optimize()
 

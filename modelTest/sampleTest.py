@@ -43,9 +43,9 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
 
     # !!!might have problem here
     for i in range(num_samples):
-        #if y[i] == 0.5:  #P
+        if y[i] == 0.5:  #P
             model.addConstr(x[i] <= 1 + sum(w[k] * X[i, k] for k in range(num_features)) - c - epsilon_P, name=f"classification_positive_{i}")
-        #else:  #N
+        else:  #N
             model.addConstr(y_vars[i] >= sum(w[k] * X[i, k] for k in range(num_features)) - c + epsilon_N, name=f"classification_negative_{i}")
     model.optimize()
 
