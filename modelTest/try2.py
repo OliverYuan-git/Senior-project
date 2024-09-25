@@ -28,7 +28,7 @@ crop_data['target'] = (crop_data['label'] == 6).astype(int)
 X_crop = crop_data.drop(columns=['label', 'target']).values
 y_crop = crop_data['target'].values
 
-X_sp = sp_data.drop(columns=['quality'])
+X_sp = sp_data.drop(columns=['quality']).values
 y_sp = sp_data['quality'].values
 
 # randon sample
@@ -53,7 +53,7 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
     model = Model("Wide-Reach_Classification")
     model.setParam(GRB.Param.TimeLimit, 120) # time
     model.setParam(GRB.Param.MIPGap, 0.01) # gap
-    model.setParam(GRB.Param.Heuristics, 0.5)
+    model.setParam(GRB.Param.Heuristics, 0)
     model.setParam(GRB.Param.NodeMethod, 2)  
 
     num_features = X.shape[1]
@@ -78,6 +78,9 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
             model.addConstr(y_vars[i] >= sum(w[k] * X[i, k] for k in range(num_features)) - c + epsilon_N, name=f"classification_negative_{i}")
 
     model.optimize()
+
+    for v in model.getVars():
+        print('%s %g' % (v.VarName, v.X))
 
     if model.status == GRB.OPTIMAL or model.status == GRB.TIME_LIMIT:
         initial_reach = sum(1 for i in range(num_samples) if y[i] == 1)
