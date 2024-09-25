@@ -76,8 +76,8 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
             model.addConstr(y_vars[i] >= sum(w[k] * X[i, k] for k in range(num_features)) - c + epsilon_N, name=f"classification_negative_{i}")
     model.optimize()
 
-    for v in model.getVars():
-        print('%s %g' % (v.VarName, v.X))
+    # for v in model.getVars():
+    #     print('%s %g' % (v.VarName, v.X))
 
     if model.status == GRB.OPTIMAL or model.status == GRB.TIME_LIMIT:
         initial_reach = sum(1 for i in range(num_samples) if y[i] == 1)
