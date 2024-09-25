@@ -7,7 +7,7 @@ import numpy as np
 sp_data = pd.read_csv('small-sample.csv')
 X_sp = sp_data.drop(columns=['quality']).values
 y_sp = sp_data['quality'].values
-X_sp_sample, _, y_sp_sample, _ = train_test_split(X_sp, y_sp, test_size=0.5)
+X_sp_sample, _, y_sp_sample, _ = train_test_split(X_sp, y_sp, test_size=0.2, random_state=42)
 
 def compute_lambda(n, theta):
     return 10 * (n + 1) * theta
@@ -43,7 +43,7 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
 
     # !!!might have problem here
     for i in range(num_samples):
-        if y[i] == 0.5:  #P
+        if y[i] == 1:  #P
             model.addConstr(x[i] <= 1 + sum(w[k] * X[i, k] for k in range(num_features)) - c - epsilon_P, name=f"classification_positive_{i}")
         else:  #N
             model.addConstr(y_vars[i] >= sum(w[k] * X[i, k] for k in range(num_features)) - c + epsilon_N, name=f"classification_negative_{i}")
