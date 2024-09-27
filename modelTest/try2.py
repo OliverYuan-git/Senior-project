@@ -4,8 +4,6 @@ from gurobipy import Model, GRB, quicksum, LinExpr
 from sklearn.model_selection import train_test_split
 import numpy as np
 
-red_wine_data = pd.read_csv('winequality-red-corrected.csv')
-white_wine_data = pd.read_csv('winequality-white-corrected.csv')
 #crop_data = pd.read_csv('WinnipegDataset.csv')
 #bc_data = pd.read_csv('wdbc.csv')
 
@@ -48,7 +46,6 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
     lambda_value = compute_lambda(len(y), theta)
 
     model = Model("Wide-Reach_Classification")
-    model.setParam(GRB.Param.TimeLimit, 500) # time
     model.setParam(GRB.Param.MIPGap, 0.01) # gap
     model.setParam(GRB.Param.Heuristics, 0)
     model.setParam(GRB.Param.NodeMethod, 2)  
@@ -76,73 +73,123 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
             model.addConstr(y_vars[i] >= sum(w[k] * X[i, k] for k in range(num_features)) - c + epsilon_N, name=f"classification_negative_{i}")
     model.optimize()
 
-    # for v in model.getVars():
-    #     print('%s %g' % (v.VarName, v.X))
-
-    # if model.status == GRB.OPTIMAL or model.status == GRB.TIME_LIMIT:
-    #     initial_reach = sum(1 for i in range(num_samples) if y[i] == 1)
-    #     # bc_reach = sum(x[i].X for i in range(num_samples) if x[i].X > 0.5)
-    #     nodes = model.NodeCount
-    #     model.write('output.lp')
-        
-    #     print(f"{dataset_name} Dataset Results:")
-    #     print(f"Initial Reach: {initial_reach}")
-    #     # print(f"BC Reach: {bc_reach}")
-    #     print(f"Nodes: {nodes}\n")
-
-    #     return {
-    #         'Name': dataset_name,
-    #         'Initial Reach': initial_reach,
-    #         # 'BC Reach': bc_reach,
-    #         'Nodes': nodes
-    #     }
-    # else:
-    #     print(f"No feasible solution found for {dataset_name}.")
-    #     return {
-    #         'Name': dataset_name,
-    #         'Initial Reach': 0,
-    #         'BC Reach': 0,
-    #         'Nodes': 0
-    #     }
-
+    for v in model.getVars():
+        print('%s %g' % (v.VarName, v.X))
 
     if model.status == GRB.OPTIMAL or model.status == GRB.TIME_LIMIT:
-        try:
-            x_values = model.getAttr('X', x)
-            with open('output.lp', 'w') as f:
-                f.write(f"\\ Model Wide-Reach_Classification\n")
-                f.write(f"\\ LP format - for model browsing.\n")
-                f.write(f"Maximize\n")
-                # Write only non-zero x
-                non_zero_vars = [f"x[{i}]" for i in range(num_samples) if x_values[i] > 1e-6]
-                f.write(" + ".join(non_zero_vars))
-                f.write("\n")
-            
-            initial_reach = sum(1 for i in range(num_samples) if y[i] == 1)
-            nodes = model.NodeCount
-            print(f"{dataset_name} Dataset Results:")
-            print(f"Initial Reach: {initial_reach}")
-            print(f"Nodes: {nodes}\n")
+        initial_reach = sum(1 for i in range(num_samples) if y[i] == 1)
+        # bc_reach = sum(x[i].X for i in range(num_samples) if x[i].X > 0.5)
+        nodes = model.NodeCount
+        model.write('output.lp')
+        import re
 
-            return {
-                'Name': dataset_name,
-                'Initial Reach': initial_reach,
-                'Nodes': nodes
-            }
-        except Exception as e:
-            print(f"Error while retrieving variable values: {e}")
-            return {
-                'Name': dataset_name,
-                'Initial Reach': 0,
-                'Nodes': 0
-            }
+# Read the LP file
+        with open('output.lp', 'r') as file:
+            lines = file.readlines()
+
+        # Initialize a list to store the modified lines
+        cleaned_lines = []
+
+        # Define a regular expression to match terms with a zero coefficient
+        zero_term_pattern = re.compile(r'[\+\-]?\s*0\s*\*?\s*[a-zA-Z_]\[?\d*]')
+
+        # Flag to indicate whether we are in the Maximize section
+        in_maximize_section = False
+
+        # Process each line
+        for line in lines:
+            # Check if we are in the Maximize section
+            if "Maximize" in line:
+                in_maximize_section = True
+                cleaned_lines.append(line.strip() + '\n')
+                continue
+
+            if in_maximize_section:
+                # If we reach a non-empty constraint line, we leave the Maximize section
+                if "Subject To" in line or line.strip() == "":
+                    in_maximize_section = False
+                    cleaned_lines.append('\n' + line.strip() + '\n')
+                    continue
+
+                # Remove terms with a coefficient of 0
+                cleaned_line = zero_term_pattern.sub('', line)
+
+                # Remove excessive spaces and newlines between terms
+                cleaned_line = cleaned_line.strip()
+
+                # If there are terms on this line, append it to the Maximize section without extra newlines
+                if cleaned_line:
+                    cleaned_lines.append(cleaned_line + ' ')
+
+            else:
+                # If it's not part of the Maximize section, just add the line as is
+                cleaned_lines.append(line)
+
+        # Join the cleaned lines and ensure proper formatting with newlines where necessary
+        cleaned_content = ''.join(cleaned_lines).strip() + '\n'
+
+        # Write the cleaned LP to a new file
+        with open('cleaned_output.lp', 'w') as file:
+            file.write(cleaned_content)
+        print("Cleaned LP file created as 'cleaned_output.lp'") 
+        print(f"{dataset_name} Dataset Results:")
+        print(f"Initial Reach: {initial_reach}")
+        # print(f"BC Reach: {bc_reach}")
+        print(f"Nodes: {nodes}\n")
+
+        return {
+            'Name': dataset_name,
+            'Initial Reach': initial_reach,
+            # 'BC Reach': bc_reach,
+            'Nodes': nodes
+        }
     else:
-        print(f"No feasible solution found for {dataset_name}. Status code: {model.status}")
+        print(f"No feasible solution found for {dataset_name}.")
         return {
             'Name': dataset_name,
             'Initial Reach': 0,
+            'BC Reach': 0,
             'Nodes': 0
         }
+
+
+    # if model.status == GRB.OPTIMAL or model.status == GRB.TIME_LIMIT:
+    #     try:
+    #         x_values = model.getAttr('X', x)
+    #         with open('output.lp', 'w') as f:
+    #             f.write(f"\\ Model Wide-Reach_Classification\n")
+    #             f.write(f"\\ LP format - for model browsing.\n")
+    #             f.write(f"Maximize\n")
+    #             # Write only non-zero x
+    #             non_zero_vars = [f"x[{i}]" for i in range(num_samples) if x_values[i] > 1e-6]
+    #             f.write(" + ".join(non_zero_vars))
+    #             f.write("\n")
+            
+    #         initial_reach = sum(1 for i in range(num_samples) if y[i] == 1)
+    #         nodes = model.NodeCount
+    #         print(f"{dataset_name} Dataset Results:")
+    #         print(f"Initial Reach: {initial_reach}")
+    #         print(f"Nodes: {nodes}\n")
+
+    #         return {
+    #             'Name': dataset_name,
+    #             'Initial Reach': initial_reach,
+    #             'Nodes': nodes
+    #         }
+    #     except Exception as e:
+    #         print(f"Error while retrieving variable values: {e}")
+    #         return {
+    #             'Name': dataset_name,
+    #             'Initial Reach': 0,
+    #             'Nodes': 0
+    #         }
+    # else:
+    #     print(f"No feasible solution found for {dataset_name}. Status code: {model.status}")
+    #     return {
+    #         'Name': dataset_name,
+    #         'Initial Reach': 0,
+    #         'Nodes': 0
+    #     }
 
 results = []
 #results.append(wide_reach_classification(X_bc_sample, y_bc_sample, "B&C", theta=0.99))
