@@ -48,7 +48,7 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
     lambda_value = compute_lambda(len(y), theta)
 
     model = Model("Wide-Reach_Classification")
-    model.setParam(GRB.Param.TimeLimit, 120) # time
+    model.setParam(GRB.Param.TimeLimit, 500) # time
     model.setParam(GRB.Param.MIPGap, 0.01) # gap
     model.setParam(GRB.Param.Heuristics, 0)
     model.setParam(GRB.Param.NodeMethod, 2)  
@@ -79,28 +79,68 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
     # for v in model.getVars():
     #     print('%s %g' % (v.VarName, v.X))
 
-    if model.status == GRB.OPTIMAL or model.status == GRB.TIME_LIMIT:
-        initial_reach = sum(1 for i in range(num_samples) if y[i] == 1)
-        # bc_reach = sum(x[i].X for i in range(num_samples) if x[i].X > 0.5)
-        nodes = model.NodeCount
-        model.write('output.lp')
-        print(f"{dataset_name} Dataset Results:")
-        print(f"Initial Reach: {initial_reach}")
-        # print(f"BC Reach: {bc_reach}")
-        print(f"Nodes: {nodes}\n")
+    # if model.status == GRB.OPTIMAL or model.status == GRB.TIME_LIMIT:
+    #     initial_reach = sum(1 for i in range(num_samples) if y[i] == 1)
+    #     # bc_reach = sum(x[i].X for i in range(num_samples) if x[i].X > 0.5)
+    #     nodes = model.NodeCount
+    #     model.write('output.lp')
+        
+    #     print(f"{dataset_name} Dataset Results:")
+    #     print(f"Initial Reach: {initial_reach}")
+    #     # print(f"BC Reach: {bc_reach}")
+    #     print(f"Nodes: {nodes}\n")
 
-        return {
-            'Name': dataset_name,
-            'Initial Reach': initial_reach,
-            # 'BC Reach': bc_reach,
-            'Nodes': nodes
-        }
+    #     return {
+    #         'Name': dataset_name,
+    #         'Initial Reach': initial_reach,
+    #         # 'BC Reach': bc_reach,
+    #         'Nodes': nodes
+    #     }
+    # else:
+    #     print(f"No feasible solution found for {dataset_name}.")
+    #     return {
+    #         'Name': dataset_name,
+    #         'Initial Reach': 0,
+    #         'BC Reach': 0,
+    #         'Nodes': 0
+    #     }
+
+
+    if model.status == GRB.OPTIMAL or model.status == GRB.TIME_LIMIT:
+        try:
+            x_values = model.getAttr('X', x)
+            with open('output.lp', 'w') as f:
+                f.write(f"\\ Model Wide-Reach_Classification\n")
+                f.write(f"\\ LP format - for model browsing.\n")
+                f.write(f"Maximize\n")
+                # Write only non-zero x
+                non_zero_vars = [f"x[{i}]" for i in range(num_samples) if x_values[i] > 1e-6]
+                f.write(" + ".join(non_zero_vars))
+                f.write("\n")
+            
+            initial_reach = sum(1 for i in range(num_samples) if y[i] == 1)
+            nodes = model.NodeCount
+            print(f"{dataset_name} Dataset Results:")
+            print(f"Initial Reach: {initial_reach}")
+            print(f"Nodes: {nodes}\n")
+
+            return {
+                'Name': dataset_name,
+                'Initial Reach': initial_reach,
+                'Nodes': nodes
+            }
+        except Exception as e:
+            print(f"Error while retrieving variable values: {e}")
+            return {
+                'Name': dataset_name,
+                'Initial Reach': 0,
+                'Nodes': 0
+            }
     else:
-        print(f"No feasible solution found for {dataset_name}.")
+        print(f"No feasible solution found for {dataset_name}. Status code: {model.status}")
         return {
             'Name': dataset_name,
             'Initial Reach': 0,
-            'BC Reach': 0,
             'Nodes': 0
         }
 
