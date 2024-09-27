@@ -67,13 +67,14 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
         V >= (theta - 1) * quicksum((x[i] if y[i] ==1 else 0) for i in range(num_samples)) + theta * quicksum((y_vars[j] if y[j] == 0 else 0)for j in range(num_samples)) + theta * epsilon_R,
         name="precision_constraint"
     )
-    
+
     # !!!might have problem here
     for i in range(num_samples):
         if y[i] == 1:  #P
             model.addConstr(x[i] <= 1 + sum(w[k] * X[i, k] for k in range(num_features)) - c - epsilon_P, name=f"classification_positive_{i}")
         else:  #N
             model.addConstr(y_vars[i] >= sum(w[k] * X[i, k] for k in range(num_features)) - c + epsilon_N, name=f"classification_negative_{i}")
+
     model.optimize()
 
     # for v in model.getVars():
@@ -82,13 +83,14 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
     if model.status == GRB.OPTIMAL or model.status == GRB.TIME_LIMIT:
         initial_reach = sum(1 for i in range(num_samples) if y[i] == 1)
         # bc_reach = sum(x[i].X for i in range(num_samples) if x[i].X > 0.5)
-        nodes = model.NodeCount
-        model.write('output.lp')
+        nodes = model.NodeCount 
+
         print(f"{dataset_name} Dataset Results:")
         print(f"Initial Reach: {initial_reach}")
         # print(f"BC Reach: {bc_reach}")
         print(f"Nodes: {nodes}\n")
-
+        
+        model.write('%s.mps' % dataset_name) 
         return {
             'Name': dataset_name,
             'Initial Reach': initial_reach,
@@ -103,6 +105,7 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
             'BC Reach': 0,
             'Nodes': 0
         }
+
 
 results = []
 #results.append(wide_reach_classification(X_bc_sample, y_bc_sample, "B&C", theta=0.99))
