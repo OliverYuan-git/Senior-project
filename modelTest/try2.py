@@ -1,11 +1,11 @@
 import random
 import pandas as pd
-from gurobipy import Model, GRB, quicksum
+from gurobipy import Model, GRB, quicksum, LinExpr
 from sklearn.model_selection import train_test_split
 import numpy as np
 
-red_wine_data = pd.read_csv('modelTest\winequality-red-corrected.csv')
-white_wine_data = pd.read_csv('modelTest\winequality-white-corrected.csv')
+red_wine_data = pd.read_csv('winequality-red-corrected.csv')
+white_wine_data = pd.read_csv('winequality-white-corrected.csv')
 #crop_data = pd.read_csv('WinnipegDataset.csv')
 #bc_data = pd.read_csv('wdbc.csv')
 
@@ -64,10 +64,10 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
     # Apply  Lagrangian
     model.setObjective(quicksum((x[i] if y[i] ==1 else 0) for i in range(num_samples)) - lambda_value * V, GRB.MAXIMIZE)
     model.addConstr(
-        V >= (theta - 1) * quicksum((x[i] if y[i] ==1 else 0) for i in range(num_samples)) + theta * quicksum((y_vars[j] if y[j] ==0 else 0)for j in range(num_samples)) + theta * epsilon_R,
+        V >= (theta - 1) * quicksum((x[i] if y[i] ==1 else 0) for i in range(num_samples)) + theta * quicksum((y_vars[j] if y[j] == 0 else 0)for j in range(num_samples)) + theta * epsilon_R,
         name="precision_constraint"
     )
-
+    
     # !!!might have problem here
     for i in range(num_samples):
         if y[i] == 1:  #P
@@ -81,18 +81,18 @@ def wide_reach_classification(X, y, dataset_name, theta, epsilon_R=0.01, epsilon
 
     if model.status == GRB.OPTIMAL or model.status == GRB.TIME_LIMIT:
         initial_reach = sum(1 for i in range(num_samples) if y[i] == 1)
-        bc_reach = sum(x[i].X for i in range(num_samples) if x[i].X > 0.5)
+        # bc_reach = sum(x[i].X for i in range(num_samples) if x[i].X > 0.5)
         nodes = model.NodeCount
-        model.write('output.sol')
+        model.write('output.lp')
         print(f"{dataset_name} Dataset Results:")
         print(f"Initial Reach: {initial_reach}")
-        print(f"BC Reach: {bc_reach}")
+        # print(f"BC Reach: {bc_reach}")
         print(f"Nodes: {nodes}\n")
 
         return {
             'Name': dataset_name,
             'Initial Reach': initial_reach,
-            'BC Reach': bc_reach,
+            # 'BC Reach': bc_reach,
             'Nodes': nodes
         }
     else:
@@ -108,7 +108,7 @@ results = []
 #results.append(wide_reach_classification(X_bc_sample, y_bc_sample, "B&C", theta=0.99))
 results.append(wide_reach_classification(X_red, y_red, "Wine Quality (red)", theta=0.04))
 results.append(wide_reach_classification(X_white, y_white, "Wine Quality (white)", theta=0.1))
-#results.append(wide_reach_classification(X_dcrop_sample, y_crop_sample, "Crop", theta=0.9))
+#results.append(wide_reach_classification(X_crop_sample, y_crop_sample, "Crop", theta=0.9))
 
 df_results = pd.DataFrame(results)
 print("Summary of Results:")
