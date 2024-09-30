@@ -6,7 +6,8 @@ import numpy as np
 
 #crop_data = pd.read_csv('WinnipegDataset.csv')
 #bc_data = pd.read_csv('wdbc.csv')
-
+red_wine_data = pd.read_csv('modelTest\winequality-red-corrected.csv')
+white_wine_data = pd.read_csv('modelTest\winequality-white-corrected.csv')
 # data processing
 red_wine_data['target'] = (red_wine_data['quality'] >= 8).astype(int)
 X_red = red_wine_data.drop(columns=['quality', 'target']).values
