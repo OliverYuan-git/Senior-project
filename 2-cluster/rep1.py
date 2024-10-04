@@ -3,28 +3,28 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split  
 from gurobipy import Model, GRB, quicksum
 
-# def generate_custom_2_cluster_data(n_negative=320, n_positive=80, d=2):
-#     negative_samples = np.random.rand(n_negative, d)
-#     positive_cluster_1 = np.random.rand(n_positive // 2, d) * 0.2  # around 0
-#     positive_cluster_2 = np.random.rand(n_positive // 2, d)  
-#     positive_samples = np.vstack((positive_cluster_1, positive_cluster_2))
-#     X = np.vstack((positive_samples, negative_samples))
-#     y = np.hstack((np.ones(len(positive_samples)), np.zeros(len(negative_samples))))
-#     return X, y
-
-def generate_custom_2_cluster_data(n=400, d=8, d_max=8):
-    negative_samples = np.random.rand(4 * n // 5, d)
-    s = (np.math.factorial(d) / np.math.factorial(d_max)) ** (1 / d)  
-    positive_uniform = np.random.rand(n // 10, d)
-    positive_cluster_1 = np.random.rand(n // 20, d)
-    positive_cluster_1 = positive_cluster_1 / positive_cluster_1.sum(axis=1, keepdims=True) * s
-    positive_cluster_2 = np.random.rand(n // 20, d)
-    positive_cluster_2 = positive_cluster_2 / positive_cluster_2.sum(axis=1, keepdims=True) * s
-    positive_cluster_2 = s - positive_cluster_2
-    positive_samples = np.vstack((positive_uniform, positive_cluster_1, positive_cluster_2))
+def generate_custom_2_cluster_data(n_negative=320, n_positive=80, d=2):
+    negative_samples = np.random.rand(n_negative, d)
+    positive_cluster_1 = np.random.rand(n_positive // 2, d) * 0.2  # around 0
+    positive_cluster_2 = np.random.rand(n_positive // 2, d)  
+    positive_samples = np.vstack((positive_cluster_1, positive_cluster_2))
     X = np.vstack((positive_samples, negative_samples))
     y = np.hstack((np.ones(len(positive_samples)), np.zeros(len(negative_samples))))
     return X, y
+
+# def generate_custom_2_cluster_data(n=400, d=8, d_max=8):
+#     negative_samples = np.random.rand(4 * n // 5, d)
+#     s = (np.math.factorial(d) / np.math.factorial(d_max)) ** (1 / d)  
+#     positive_uniform = np.random.rand(n // 10, d)
+#     positive_cluster_1 = np.random.rand(n // 20, d)
+#     positive_cluster_1 = positive_cluster_1 / positive_cluster_1.sum(axis=1, keepdims=True) * s
+#     positive_cluster_2 = np.random.rand(n // 20, d)
+#     positive_cluster_2 = positive_cluster_2 / positive_cluster_2.sum(axis=1, keepdims=True) * s
+#     positive_cluster_2 = s - positive_cluster_2
+#     positive_samples = np.vstack((positive_uniform, positive_cluster_1, positive_cluster_2))
+#     X = np.vstack((positive_samples, negative_samples))
+#     y = np.hstack((np.ones(len(positive_samples)), np.zeros(len(negative_samples))))
+#     return X, y
 
 X, y = generate_custom_2_cluster_data()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
