@@ -4,7 +4,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
-def generate_2_cluster_data(n=400, d=8, d_max=8):
+def generate_2_cluster_data(n=400, d=2, d_max=8):
     negative_samples = np.random.rand(4 * n // 5, d)
     s = (np.math.factorial(d) / np.math.factorial(d_max)) ** (1 / d)  
     positive_uniform = np.random.rand(n // 10, d)

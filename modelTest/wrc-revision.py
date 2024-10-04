@@ -7,8 +7,8 @@ import re
 
 red_wine = 'winequality-red-corrected.csv'
 white_wine = 'winequality-white-corrected.csv'
-crop = 'WinnipegDataset.csv'
-bc = 'wdbc.csv'
+# crop = 'WinnipegDataset.csv'
+# bc = 'wdbc.csv'
 
 def compute_lambda(n, theta):
     return 10 * (n + 1) * theta
@@ -18,8 +18,8 @@ def generate_initial_solution(num_samples):
     return [0.5 for _ in range(num_samples)]
 
 def clean_output(file):
-        with open('output.lp', 'r') as file:
-            lines = file.readlines()
+        with open(file, 'r') as f:
+            lines = f.readlines()
 
         # Initialize a list to store the modified lines
         cleaned_lines = []
@@ -63,8 +63,8 @@ def clean_output(file):
         cleaned_content = ''.join(cleaned_lines).strip() + '\n'
 
         # Write the cleaned LP to a new file
-        with open('cleaned_output.lp', 'w') as file:
-            file.write(cleaned_content)
+        with open(f'{file}_cleaned.lp', 'w') as f:
+            f.write(cleaned_content)
 
 def data_preprocessing(dataset_path):
     if dataset_path == red_wine:
@@ -81,22 +81,22 @@ def data_preprocessing(dataset_path):
         X = data.drop(columns=['quality', 'target']).values
         y = data['target'].values
         return dataset_name,X,y
-    elif dataset_path == crop:
-        dataset_name = 'crop'
-        data = pd.read_csv(crop)
-        crop_random_sample_list = random.sample(range(325835), 10000)
-        data = data.iloc[crop_random_sample_list]
-        data['target'] = (data['label'] == 6).astype(int)
-        X = data.drop(columns=['label', 'target']).values
-        y = data['target'].values
-        return dataset_name,X,y
-    elif dataset_path == bc:
-        dataset_name = 'B&C'
-        data = pd.read_csv(bc)
-        data['target'] = (data['diagnosis'] == 'M').astype(int)
-        X = data.drop(columns=['diagnosis', 'target']).values
-        y = data['target'].values
-        return dataset_name,X,y
+    # elif dataset_path == crop:
+    #     dataset_name = 'crop'
+    #     data = pd.read_csv(crop)
+    #     crop_random_sample_list = random.sample(range(325835), 10000)
+    #     data = data.iloc[crop_random_sample_list]
+    #     data['target'] = (data['label'] == 6).astype(int)
+    #     X = data.drop(columns=['label', 'target']).values
+    #     y = data['target'].values
+    #     return dataset_name,X,y
+    # elif dataset_path == bc:
+    #     dataset_name = 'B&C'
+    #     data = pd.read_csv(bc)
+    #     data['target'] = (data['diagnosis'] == 'M').astype(int)
+    #     X = data.drop(columns=['diagnosis', 'target']).values
+    #     y = data['target'].values
+    #     return dataset_name,X,y
     else:
         raise Exception("No valid dataset name is inputted")
 
@@ -133,38 +133,38 @@ def wide_reach_classification(dataset_path, theta, epsilon_R=0.01, epsilon_P=0.0
             model.addConstr(x[i] <= 1 + sum(w[k] * X[i, k] for k in range(num_features)) - c - epsilon_P, name=f"classification_positive_{i}")
         else:  #N
             model.addConstr(y_vars[i] >= sum(w[k] * X[i, k] for k in range(num_features)) - c + epsilon_N, name=f"classification_negative_{i}")
-    model.optimize()
+    # model.optimize()
 
-    if model.status == GRB.OPTIMAL or model.status == GRB.TIME_LIMIT:
-        nodes = model.NodeCount
+    # if model.status == GRB.OPTIMAL or model.status == GRB.TIME_LIMIT:
+        # nodes = model.NodeCount
         model.write(f'{dataset_name}.lp')
         clean_output(f'{dataset_name}.lp')
 
-        print(f"{dataset_name} Dataset Results:")
-        # print(f"Initial Reach: {initial_reach}")
-        # print(f"BC Reach: {bc_reach}")
-        print(f"Nodes: {nodes}\n")
+    #     print(f"{dataset_name} Dataset Results:")
+    #     # print(f"Initial Reach: {initial_reach}")
+    #     # print(f"BC Reach: {bc_reach}")
+    #     print(f"Nodes: {nodes}\n")
 
-        return {
-            'Name': dataset_name,
-            # 'Initial Reach': initial_reach,
-            # 'BC Reach': bc_reach,
-            'Nodes': nodes
-        }
-    else:
-        print(f"No feasible solution found for {dataset_name}.")
-        return {
-            'Name': dataset_name,
-            'Initial Reach': 0,
-            'BC Reach': 0,
-            'Nodes': 0
-        }
+    #     return {
+    #         'Name': dataset_name,
+    #         # 'Initial Reach': initial_reach,
+    #         # 'BC Reach': bc_reach,
+    #         'Nodes': nodes
+    #     }
+    # # else:
+    #     print(f"No feasible solution found for {dataset_name}.")
+    #     return {
+    #         'Name': dataset_name,
+    #         'Initial Reach': 0,
+    #         'BC Reach': 0,
+    #         'Nodes': 0
+    #     }
 
 results = []
-results.append(wide_reach_classification(bc, theta=0.99))
+# results.append(wide_reach_classification(bc, theta=0.99))
 results.append(wide_reach_classification(red_wine,theta=0.04))
 results.append(wide_reach_classification(white_wine, theta=0.1))
-results.append(wide_reach_classification(crop, theta=0.9))
+# results.append(wide_reach_classification(crop, theta=0.9))
 
 df_results = pd.DataFrame(results)
 print("Summary of Results:")
