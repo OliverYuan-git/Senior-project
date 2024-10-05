@@ -7,8 +7,8 @@ import re
 
 red_wine = 'winequality-red-corrected.csv'
 white_wine = 'winequality-white-corrected.csv'
-crop = 'WinnipegDataset.csv'
-bc = 'wdbc.csv'
+#crop = 'WinnipegDataset.csv'
+#bc = 'wdbc.csv'
 
 def compute_lambda(n, theta):
     return 10 * (n + 1) * theta
@@ -18,8 +18,8 @@ def generate_initial_solution(num_samples):
     return [0.5 for _ in range(num_samples)]
 
 def clean_output(file):
-        with open('output.lp', 'r') as file:
-            lines = file.readlines()
+        with open(file, 'r') as f:
+            lines = f.readlines()
 
         # Initialize a list to store the modified lines
         cleaned_lines = []
@@ -63,8 +63,8 @@ def clean_output(file):
         cleaned_content = ''.join(cleaned_lines).strip() + '\n'
 
         # Write the cleaned LP to a new file
-        with open('cleaned_output.lp', 'w') as file:
-            file.write(cleaned_content)
+        with open(f'{file}_cleaned.lp', 'w') as f:
+            f.write(cleaned_content)
 
 def data_preprocessing(dataset_path):
     if dataset_path == red_wine:
@@ -161,10 +161,10 @@ def wide_reach_classification(dataset_path, theta, epsilon_R=0.01, epsilon_P=0.0
         }
 
 results = []
-results.append(wide_reach_classification(bc, theta=0.99))
+#results.append(wide_reach_classification(bc, theta=0.99))
 results.append(wide_reach_classification(red_wine,theta=0.04))
 results.append(wide_reach_classification(white_wine, theta=0.1))
-results.append(wide_reach_classification(crop, theta=0.9))
+#results.append(wide_reach_classification(crop, theta=0.9))
 
 df_results = pd.DataFrame(results)
 print("Summary of Results:")
