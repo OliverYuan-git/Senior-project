@@ -8,7 +8,7 @@ import re
 red_wine = 'winequality-red-corrected.csv'
 white_wine = 'winequality-white-corrected.csv'
 #crop = 'WinnipegDataset.csv'
-#bc = 'wdbc.csv'
+bc = 'wdbc.csv'
 
 def compute_lambda(n, theta):
     return 10 * (n + 1) * theta
@@ -81,15 +81,15 @@ def data_preprocessing(dataset_path):
         X = data.drop(columns=['quality', 'target']).values
         y = data['target'].values
         return dataset_name,X,y
-    elif dataset_path == crop:
-        dataset_name = 'crop'
-        data = pd.read_csv(crop)
-        crop_random_sample_list = random.sample(range(325835), 10000)
-        data = data.iloc[crop_random_sample_list]
-        data['target'] = (data['label'] == 6).astype(int)
-        X = data.drop(columns=['label', 'target']).values
-        y = data['target'].values
-        return dataset_name,X,y
+    # elif dataset_path == crop:
+    #     dataset_name = 'crop'
+    #     data = pd.read_csv(crop)
+    #     crop_random_sample_list = random.sample(range(325835), 10000)
+    #     data = data.iloc[crop_random_sample_list]
+    #     data['target'] = (data['label'] == 6).astype(int)
+    #     X = data.drop(columns=['label', 'target']).values
+    #     y = data['target'].values
+    #     return dataset_name,X,y
     elif dataset_path == bc:
         dataset_name = 'B&C'
         data = pd.read_csv(bc)
@@ -161,7 +161,7 @@ def wide_reach_classification(dataset_path, theta, epsilon_R=0.01, epsilon_P=0.0
         }
 
 results = []
-#results.append(wide_reach_classification(bc, theta=0.99))
+results.append(wide_reach_classification(bc, theta=0.99))
 results.append(wide_reach_classification(red_wine,theta=0.04))
 results.append(wide_reach_classification(white_wine, theta=0.1))
 #results.append(wide_reach_classification(crop, theta=0.9))
