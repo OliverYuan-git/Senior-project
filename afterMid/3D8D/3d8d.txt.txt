@@ -1,0 +1,98 @@
+TABLE LEGEND
+  F1:  Maximum Fisher's discriminant ratio 
+  F1v: Directional-vector maximum Fisher's discriminant ratio 
+  F2:  Overlap of the per-class bounding boxes 
+  F3:  Maximum (individual) feature efficiency 
+  F4:  Collective feature efficiency (sum of each feature efficiency) 
+  L1:  Minimized sum of the error distance of a linear classifier (linear SMO) 
+  L2:  Training error of a linear classifier (linear SMO) 
+  L3:  Nonlinearity of a linear classifier (linear SMO) 
+  N1:  Fraction of points on the class boundary 
+  N2:  Ratio of average intra/inter class nearest neighbor distance 
+  N3:  Leave-one-out error rate of the one-nearest neighbor classifier 
+  N4:  Nonlinearity of the one-nearest neighbor classifier 
+  T1:  Fraction of maximum covering spheres 
+  T2:  Average number of points per dimension 
+
+
+DATA SET                               F1         F1v          F2          F3          F4          L1          L2          L3          N1          N2          N3          N4          T1          T2
+/mnt../Desktop/3d8d/3d8d.arff       0.001       0.006       0.981       0.004       0.024       0.400       0.200       0.500       0.310       0.841       0.205       0.379       1.000     445.455
+
+oliver@DESKTOP-MRFHOHB:/mnt/c/Users/Oliver/Desktop/research/dcol/Source$ ./dcol -A -i /mnt/c/Users/Oliver/Desktop/3d8d/3
+d8d.arff -o /mnt/c/Users/Oliver/Desktop/3d8d/3d8d.txt
+
+ DCoL  Copyright (C) 2009  Albert Orriols-Puig and Nuria Macia
+ The DCoL comes with ABSOLUTELY NO WARRANTY; for details type `./dcol show w'.
+ This is free software, and you are welcome to redistribute it
+ under certain conditions; type `./dcol show c' for details.
+
+
+
+  > PROCESSING COMPLEXITY MEASURES ON DATA SET: /mnt/c/Users/Oliver/Desktop/3d8d/3d8d.arff
+
+    > [WARNING DATA SET FORMAT] The following HEADER line is not recognized:
+       >> This line will be ignored.
+
+
+    > [WARNING DATA SET FORMAT] The following HEADER line is not recognized:
+       >> This line will be ignored.
+
+
+    > Processing the maximum Fisher's discriminant ratio (F1)
+      > Fisher discr. ratio: 0.00100875
+
+    > Processing the directional-vector maximum Fisher's discriminant ratio (F1v)
+      > Directional-vector maximum Fisher discr. ratio: 0.00602904
+
+    > Processing the overlap of per-class bounding boxes (F2)
+      > Volume overlap: 0.980753
+
+    > Processing the efficiency of attributes (F3/F4)
+      > Discriminant power of attribute 0: 0.0044898
+      > Discriminant power of attribute 1: 0.00122449
+      > Discriminant power of attribute 2: 0.000408163
+      > Discriminant power of attribute 3: 0.00163265
+      > Discriminant power of attribute 4: 0.00204082
+      > Discriminant power of attribute 5: 0.00204082
+      > Discriminant power of attribute 6: 0.00408163
+      > Discriminant power of attribute 7: 0.00244898
+      > Discriminant power of attribute 8: 0.00306122
+      > Discriminant power of attribute 9: 0.00183673
+      > Discriminant power of attribute 10: 0.000816327
+      > Maximum (individual) efficiency of attributes: 0.00408163
+      > Collective efficiency of attributes: 0.0240816
+
+    > Processing the fraction of points on the class boundary (N1)
+      > Number of nodes on the class boundary: 1521
+      > Total number of nodes: 4900
+      > Fraction of points on the class boundary: 0.310408
+
+    > Processing the ratio of average intra/inter class nearest neighbor distance (N2)
+      > Ratio of average intra/inter distance: 0.841057
+
+    > Processing the leave-one-out error rate of the one-nearest neighbor classifier (N3)
+      > Error rate of the 1NN: 0.205306
+
+    > Processing the nonlinearity of the one-nearest neighbor classifier (N4)
+      > Nonlinearity of the 1NN: 0.379388
+
+    > Processing the fraction of maximum covering spheres (T1)
+      > Fraction max. cov. spheres (numSpheres - meanSpheres - stdSpheres): 1 ( 4900 2.53592 0.720997 )
+
+    > Processing the average number of points per dimension (T2)
+      > Number of points per dimension: 445.455
+
+    > Running SMO to get the linear classifier
+
+    > Processing the minimized sum of the error distance of a linear classifier (Linear SMO) (L1)
+      > Error distance of a LC: 0.40013
+
+    > Processing the training error of a linear classifier (Linear SMO) (L2)
+      > Training error of a LC: 0.2
+
+    > Processing the nonlinearity of a linear classifier (Linear SMO) (L3)
+      > Nonlinearity of a LC: 0.5
+
+    > Destroying the support vector machine
+
+  > END OF COMPLEXITY MEASURES PROCESSING
